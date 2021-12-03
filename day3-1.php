@@ -1001,6 +1001,10 @@ $input = '101011111001
 101111100010
 010100010011';
 
+//
+// Part 1
+//
+
 $binaryStrings = explode("\n", $input);
 $positionCount = strlen($binaryStrings[0]); // assuming all the same length; should be 12 based on the above dataset
 
@@ -1008,20 +1012,82 @@ $positionCount = strlen($binaryStrings[0]); // assuming all the same length; sho
 // A sum of 0 means equal numbers of each.
 $sumsByPosition = array_fill(0, $positionCount, 0);
 foreach($binaryStrings as $binaryString) {
-    for ($i = 0; $i < $positionCount; $i++) {
-        $sumsByPosition[$i] += ($binaryString[$i] === "1" ? 1 : -1);
+    for ($pos = 0; $pos < $positionCount; $pos++) {
+        $sumsByPosition[$pos] += ($binaryString[$pos] === "1" ? 1 : -1);
     }
 }
 
 // Now generate gamma and epsilon as binary strings.
 $gamma = '';
 $epsilon = '';
-for ($i = 0; $i < $positionCount; $i++) {
-    $gamma   .= ($sumsByPosition[$i] >= 0 ? '1' : '0');
-    $epsilon .= ($sumsByPosition[$i] >= 0 ? '0' : '1');
+for ($pos = 0; $pos < $positionCount; $pos++) {
+    $gamma   .= ($sumsByPosition[$pos] > 0 ? '1' : '0');
+    $epsilon .= ($sumsByPosition[$pos] > 0 ? '0' : '1');
 }
 
 // Generate result, which is the decimal integer value of gamma * decimal integer value of epsilon
-$result = bindec($gamma) * bindec($epsilon);
+$powerConsumption = bindec($gamma) * bindec($epsilon);
+print 'Power Consumption = ' . $powerConsumption . "\n";
 
-print $result . "\n";
+//
+// Part 2
+//
+
+$candidates = $binaryStrings;
+
+$o2 = candidate_filtration(
+    $positionCount,
+    $candidates,
+    function ($val) { return $val >= 0 ? '1' : '0'; }
+);
+
+$co2 = candidate_filtration(
+    $positionCount,
+    $candidates,
+    function ($val) { return $val >= 0 ? '0' : '1'; }
+);
+
+$lifeSupportRating = bindec($o2) * bindec($co2);
+print 'Life Support Rating = ' . $lifeSupportRating . "\n";
+
+
+/**
+ * Filters down a list of candidates to get a specific entry in the array based on the algorithm.
+ * @param int $positionCount
+ * @param array $candidates
+ * @param $testvalueFunction
+ * @return string
+ */
+function candidate_filtration(int $positionCount, array $candidates, $testvalueFunction) : string
+{
+
+    // walking from left to right, we are going to disqualify values who do not match the testvalue
+    for ($pos = 0; $pos < $positionCount; $pos++) {
+
+        // figure out if there's more 1s than 0s in the remaining candidates (stored in $sum)
+        // and then use our testvalue to determine the match value based on that sum.
+        $sum = 0;
+        foreach($candidates as $key => $candidate) {
+            $sum += ($candidate[$pos] === "1" ? 1 : -1);
+        }
+        $testValue = $testvalueFunction($sum);
+
+        // Now that we have testvalue, remove entries that don't match the testvalue in the position
+        foreach ($candidates as $key => $candidate) {
+            // this is the only candidate left, just return it now.
+            if (sizeof($candidates) === 1) return array_pop($candidates);
+
+            // remove this candidate
+            if ($candidate[$pos] !== $testValue) {
+                unset($candidates[$key]);
+            }
+        }
+
+        // Reflow the array, because PHP's sizeof() is bad and it should feel bad.
+        $candidates = array_values($candidates);
+
+    }
+
+}
+
+
