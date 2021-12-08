@@ -9,11 +9,11 @@ require('../common.php');
 // load the input file into an array of strings.
 $lines = loadFileIntoLines('./input.txt');
 
-// process each line; the counter will get incremented.
-$analyzer = new Analysis();
-
+// initialize score.
 $score = 0;
 
+// process each line; the counter will get incremented.
+$analyzer = new Analysis();
 foreach($lines as $line) {
     $score += $analyzer->execute($line);
 }
