@@ -11,16 +11,17 @@ $lines = loadFileIntoLines('./input.txt');
 
 // process each line; the counter will get incremented.
 $analyzer = new Analysis();
+
+$score = 0;
+
 foreach($lines as $line) {
-    $analyzer->execute($line);
+    $score += $analyzer->execute($line);
 }
 
-print PHP_EOL . 'PART 2 ANSWER = ' . $analyzer->counter . PHP_EOL;
+print PHP_EOL . 'PART 2 ANSWER = ' . $score . PHP_EOL;
 
 
 class Analysis {
-
-    public $counter = 0;
 
     public function execute(string $line): int {
 
@@ -40,7 +41,6 @@ class Analysis {
         $t['e'] = $this->_calculateE($t);
 
         $output = $this->_getOutput($outputPatterns, $t);
-        $this->counter += $output;
         return $output;
     }
 
